@@ -2,6 +2,8 @@
   "name": "node-example",
   "version": "0.0.1",
   "dependencies": {
-    "express": "2.2.0"
+    "express": "2.2.0",
+    "hashlib": "1.0.1",
+    "restler": "0.2.1"
   }
 }
