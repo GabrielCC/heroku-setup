@@ -2,26 +2,28 @@
 // parola si numele friendului
 
 var yahoo_user = {
-	username : 'gabriel_croitoru11',
-	password : 'passwordpassword',
-	friend   : 'defilerk2000',
+	username : 'gabrielassistant',
+	password : 'qwaszx110887',
+	friend   : 'gabriel_croitoru11',
 	requestToken : false,
 	request_params : false
 	};
 var presence = '{ }';
 var yahoo_key = 'dj0yJmk9d2ozTWlnQXJINzVGJmQ9WVdrOVltTmlaMWhrTm1jbWNHbzlNVGczT1RrMk1nLS0mcz1jb25zdW1lcnNlY3JldCZ4PTJh';
-var yahoo_secret = '9f764cb3500e0c80c5d2ca71b0319658e8c3a326'; 
+    yahoo_key = 'dj0yJmk9c3hOWTNJTnBVbE1UJmQ9WVdrOVltTmlaMWhrTm1jbWNHbzlNVGczT1RrMk1nLS0mcz1jb25zdW1lcnNlY3JldCZ4PTg2';
+var yahoo_secret = 'ba2d284216099caa121c1babfbd6e35437a74760'; 
 
 var captchadata = false;
 var captchaword = false;
 
 var yahoo_api = {
-	login :'https://login.yahoo.com/WSLogin/V1/get_auth_token?&login=' + yahoo_user.username + '&passwd=' + yahoo_user.password + '&oauth_consumer_key=' + yahoo_key +'/',
+	login :'https://login.yahoo.com/WSLogin/V1/get_auth_token?&login=' + yahoo_user.username + '&passwd=' + yahoo_user.password + '&oauth_consumer_key=' + yahoo_key,
 	login_captcha : 'https://login.yahoo.com/WSLogin/V1/get_auth_token?&login=' + yahoo_user.username + '&passwd=' + yahoo_user.password + '&oauth_consumer_key=' + yahoo_key +'&captchadata=' + captchadata + '&captchaword=' + captchaword,
 	server : 'http://developer.mesclsenger.yahooapis.com/',
 	contacts : 'v1/session?fieldsBuddyList=%2Bgroups', 
 	presence : 'v1/presence?sid='
 }
+
 if(captchaword) {
 	yahoo_api.login = yahoo_api.login_captcha;
 }
@@ -40,13 +42,13 @@ function oauthCredentials() {
 	var url = 'https://api.login.yahoo.com/oauth/v2/get_token';
 	url += '?oauth_consumer_key=' + querystring.escape(yahoo_key);
 	url += '&oauth_nonce=' + querystring.escape(oauth_nonce_value);
-	url += '&oauth_signature=' + querystring.escape(yahoo_secret + '&');
+	url += '&oauth_signature=' + yahoo_secret + '%26';
 	url += '&oauth_signature_method=PLAINTEXT';
 	url += '&oauth_timestamp=' + time;
 	url += '&oauth_token=' + (yahoo_user.requestToken);
 	url += '&oauth_version=1.0';
-	//console.log(yahoo_user.requestToken);
-	rest.get(url).on('complete',function(data){
+	rest.get(url).on('success',function(data){
+		console.log(data);			
 		signIn(data);
 	}).on('error', errorCallback);
 }
@@ -54,6 +56,7 @@ function oauthCredentials() {
 function sendPm(data) {
 	var params = eval(data);
 	var session_id = params['sessionId'];
+	console.log(params);
 	var url = 'http://developer.messenger.yahooapis.com/v1/message/yahoo/' + yahoo_user.friend + '?sid=' + session_id;
 	var time = Math.floor(new Date().getTime()/1000)
 	var oauth_signature = yahoo_secret + '%26' + yahoo_user.request_params['oauth_token_secret'];
@@ -68,19 +71,19 @@ function sendPm(data) {
 	url += '&oauth_version=1.0';	
 	url += '&notifyServerToken=1';
 	var header = { 'Content-Type' :'application/json', 'charset' : 'utf-8' };
-	console.log(url);
+	
 	error_flag = false;
 	var smessage = '{"message" : "Hello from nodejs land"}';
-	rest.post(url , {headers: header, data : smessage}).on('complete', function(data) {
-		if(!error_flag) { 
-			console.log(data);
+	rest.post(url , {headers: header, data : smessage}).on('success', function(data) {
+		console.log(data);
+		if(!error_flag) {		
 		}
 	}).on('error', errorCallback);
 	
 }
 
 function errorCallback(data) {
-	console.log('Error date');	
+	console.log(data);
 	error_flag = true;
 	var error_data = querystring.parse(data, '\n', '=');
 	if(error_data['CaptchaUrl']) {
@@ -95,7 +98,7 @@ function errorCallback(data) {
 var error_flag = false;
 function signIn(data) {
 	yahoo_user.request_params = querystring.parse(data, '&', '=');
-	console.log(yahoo_user.request_params);
+	
 	var time = Math.floor(new Date().getTime()/1000)
 	var oauth_signature = yahoo_secret + '%26' + yahoo_user.request_params['oauth_token_secret'];
 	var oauth_token = yahoo_user.request_params['oauth_token'];
@@ -110,16 +113,13 @@ function signIn(data) {
 	url += '&oauth_version=1.0';	
 	url += '&notifyServerToken=1';
 	var header = { 'Content-Type' :'application/json', 'charset' : 'utf-8' };
-	console.log(url);
 	error_flag = false;
 	rest.post(url , {headers: header, data : presence}).on('complete', function(data) {
-		if(!error_flag) { 
-			sendPm(data);
-		}
+		sendPm(data);
 	}).on('error', errorCallback);
 }
 
-rest.get(yahoo_api.login).on('complete', function(data) {
+rest.get(yahoo_api.login).on('success', function(data) {
 	if(!error_flag) {
 		yahoo_user.requestToken = data.replace('RequestToken=', '').replace('\n','');
 		oauthCredentials();
